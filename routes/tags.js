@@ -5,7 +5,7 @@ const models = require('../models')
 
 /* GET tags listing. */
 router.get('/', function (req, res, next) {
-  models.Tag.findAll({
+  models.tag.findAll({
   }).then(function (tags) {
     return res.send(tags)
   })
@@ -23,7 +23,7 @@ router.get('/:id/questions/', function (req, res, next) {
       name: req.params.id
     }
   }
-  models.Tag.find({
+  models.tag.find({
     where
   }).then(function (tag) {
     if (!tag) {

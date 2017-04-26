@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var Tag = sequelize.define('Tag', {
+  var tag = sequelize.define('tag', {
     name: {
       type: sequelize.options.dialect === 'postgres' ? 'citext' : DataTypes.STRING,
       unique: true,
@@ -13,6 +13,14 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     classMethods: {
       associate (models) {
+        models.user.belongsToMany(models.tag, {
+          as: 'subscribers',
+          through: 'subscribe'
+        })
+        models.tag.belongsToMany(models.user, {
+          as: 'subscribings',
+          through: 'subscribe'
+        })
       }
     },
     instanceMethods: {
@@ -22,5 +30,5 @@ module.exports = function (sequelize, DataTypes) {
     }
   })
 
-  return Tag
+  return tag
 }

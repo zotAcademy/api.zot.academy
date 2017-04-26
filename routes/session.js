@@ -9,7 +9,7 @@ const models = require('../models')
 const requireAuthentication = require('./middlewares/requireAuthentication')
 
 passport.use(new LocalStrategy(function (username, password, done) {
-  models.User.findOne({
+  models.user.findOne({
     where: models.Sequelize.or({
       username
     }, {

@@ -8,7 +8,7 @@ const models = require('../models')
 
 /* GET users listing. */
 router.get('/', function (req, res, next) {
-  models.User.findAll({
+  models.user.findAll({
   }).then(function (users) {
     return res.send(users)
   })
@@ -26,7 +26,7 @@ router.get('/:id', function (req, res, next) {
       username: req.params.id
     }
   }
-  models.User.find({
+  models.user.find({
     where
   }).then(function (user) {
     if (!user) {
@@ -69,7 +69,7 @@ router.post('/', function (req, res, next) {
     return next(err)
   }
 
-  models.User.findOne({
+  models.user.findOne({
     where: models.Sequelize.or({
       username: req.body.username
     }, {
@@ -91,7 +91,7 @@ router.post('/', function (req, res, next) {
       if (err) {
         return next(err)
       }
-      models.User.create({
+      models.user.create({
         username: req.body.username,
         secret: hash,
         email: req.body.email

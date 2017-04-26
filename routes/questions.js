@@ -7,8 +7,8 @@ const requireAuthentication = require('./middlewares/requireAuthentication')
 
 /* GET question listing. */
 router.get('/', function (req, res, next) {
-  models.Question.findAll({
-    include: [ models.User ]
+  models.question.findAll({
+    include: [ models.user ]
   }).then(function (questions) {
     return res.send(questions)
   })
@@ -16,8 +16,8 @@ router.get('/', function (req, res, next) {
 
 /* GET question by id */
 router.get('/:id', function (req, res, next) {
-  models.Question.findById(+req.params.id, {
-    include: [ models.User ]
+  models.question.findById(+req.params.id, {
+    include: [ models.user ]
   }).then(function (question) {
     if (!question) {
       var err = new Error('Question not found.')
@@ -31,7 +31,9 @@ router.get('/:id', function (req, res, next) {
 
 /* POST new question */
 router.post('/', requireAuthentication, function (req, res, next) {
+  models.question.create({
 
+  })
 })
 
 module.exports = router

@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var Question = sequelize.define('Question', {
+  var question = sequelize.define('question', {
     text: {
       type: DataTypes.STRING,
       allowNull: false
@@ -9,15 +9,14 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     classMethods: {
       associate (models) {
-        Question.belongsTo(models.User, {
-          as: 'Asker',
+        question.belongsTo(models.user, {
           foreignKey: {
-            name: 'AskerId',
-            allowNull: false
+            allowNull: false,
+            onDelete: 'CASCADE'
           }
         })
-        Question.belongsToMany(models.Tag, { through: 'Post' })
-        models.Tag.belongsToMany(Question, { through: 'Post' })
+        question.belongsToMany(models.tag, { through: 'post' })
+        models.tag.belongsToMany(question, { through: 'post' })
       }
     },
     instanceMethods: {
@@ -27,5 +26,5 @@ module.exports = function (sequelize, DataTypes) {
     }
   })
 
-  return Question
+  return question
 }
