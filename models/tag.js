@@ -3,7 +3,7 @@
 module.exports = function (sequelize, DataTypes) {
   var Tag = sequelize.define('Tag', {
     name: {
-      type: DataTypes.STRING,
+      type: sequelize.options.dialect === 'postgres' ? 'citext' : DataTypes.STRING,
       unique: true,
       validate: {
         is: /^[a-z]\w*$/i,
