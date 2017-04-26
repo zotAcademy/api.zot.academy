@@ -58,7 +58,8 @@ router.post('/', function (req, res, next) {
   }
 
   if (req.body.email == null ||
-    !validator.isEmail('' + req.body.email)) {
+    !validator.isEmail('' + req.body.email) ||
+    !validator.isLength('' + req.body.email, {max: 254})) {
     errs.push('Invalid email.')
   }
 
@@ -68,7 +69,7 @@ router.post('/', function (req, res, next) {
     return next(err)
   }
 
-  models.User.find({
+  models.User.findOne({
     where: models.Sequelize.or({
       username: req.body.username
     }, {
