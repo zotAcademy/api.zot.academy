@@ -3,7 +3,7 @@
 module.exports = function (sequelize, DataTypes) {
   var User = sequelize.define('User', {
     username: {
-      type: DataTypes.STRING,
+      type: sequelize.options.dialect === 'postgres' ? 'citext' : DataTypes.STRING,
       unique: true,
       validate: {
         is: /^[a-z]\w*$/i,
@@ -11,7 +11,7 @@ module.exports = function (sequelize, DataTypes) {
       }
     },
     email: {
-      type: DataTypes.STRING,
+      type: sequelize.options.dialect === 'postgres' ? 'citext' : DataTypes.STRING,
       allowNull: false,
       unique: true,
       validate: {
