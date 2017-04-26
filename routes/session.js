@@ -38,9 +38,11 @@ passport.use(new LocalStrategy(function (username, password, done) {
   })
 }))
 
-// GET current user
+// GET current session
 router.get('', requireAuthentication, function (req, res, next) {
-  return res.send(req.user)
+  return res.send({
+    user: req.user
+  })
 })
 
 // POST login
@@ -59,7 +61,9 @@ router.post('', function (req, res, next) {
       if (err) {
         return next(err)
       }
-      return res.send(user)
+      return res.send({
+        user
+      })
     })
   })(req, res, next)
 })
