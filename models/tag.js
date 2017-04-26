@@ -6,11 +6,11 @@ module.exports = function (sequelize, DataTypes) {
       type: sequelize.options.dialect === 'postgres' ? 'citext' : DataTypes.STRING,
       unique: true,
       validate: {
-        is: /^[a-z]\w*$/i,
-        len: [1, 39]
+        is: /^[a-z]\w*$/i
       }
     }
   }, {
+    timestamps: false,
     classMethods: {
       associate (models) {
         models.user.belongsToMany(models.tag, {

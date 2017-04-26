@@ -26,6 +26,7 @@
     "pg": "^6.1.5",
     "pg-hstore": "^2.3.2",
     "sequelize": "^3.30.4",
+    "twitter-text": "^1.14.3",
     "validator": "^7.0.0"
   },
   "devDependencies": {

@@ -1,5 +1,7 @@
 'use strict'
 
+const twitter = require('twitter-text')
+
 module.exports = function (sequelize, DataTypes) {
   var answer = sequelize.define('answer', {
     text: {
@@ -25,7 +27,13 @@ module.exports = function (sequelize, DataTypes) {
     },
     instanceMethods: {
       toJSON: function () {
-        return Object.assign({}, this.get())
+        var value = Object.assign({}, this.get())
+
+        value.entities = twitter.extractEntitiesWithIndices(value.text, {
+          extractUrlsWithoutProtocol: false
+        })
+
+        return value
       }
     }
   })

@@ -32,7 +32,12 @@ router.get('/:id', function (req, res, next) {
 /* POST new question */
 router.post('/', requireAuthentication, function (req, res, next) {
   models.question.create({
-
+    text: '' + req.body.text,
+    userId: req.user.id
+  }, {
+    include: [ models.user ]
+  }).then(function (question) {
+    res.send(question)
   })
 })
 
