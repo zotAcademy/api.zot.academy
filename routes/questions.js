@@ -77,10 +77,20 @@ router.delete('/:id', requireAuthentication, function (req, res, next) {
         return next(err)
       }
 
-      question.destroy()
-        .then(function () {
-          res.send(question)
-        })
+      models.answer.findOne({
+        questionId: question.id
+      }).then(function (answer) {
+        if (answer) {
+          err = new Error('Cannot delete question once it has been answered.')
+          err.status = 403
+          return next(err)
+        }
+
+        question.destroy()
+          .then(function () {
+            res.send(question)
+          })
+      })
     })
 })
 
