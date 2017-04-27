@@ -7,7 +7,8 @@ const requireAuthentication = require('./middlewares/requireAuthentication')
 
 router.get('/', function (req, res, next) {
   models.question.findAll({
-    include: [ models.user ]
+    order: [['createdAt', 'DESC']],
+    include: [{ all: true }]
   }).then(function (questions) {
     res.send(questions)
   })
