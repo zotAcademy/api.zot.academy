@@ -6,40 +6,13 @@ const validator = require('validator')
 
 const models = require('../models')
 
-/* GET users listing. */
 router.get('/', function (req, res, next) {
   models.user.findAll({
   }).then(function (users) {
-    return res.send(users)
+    res.send(users)
   })
 })
 
-/* GET user by id or username */
-router.get('/:id', function (req, res, next) {
-  var where
-  if (/^[1-9]\d*$/.test(req.params.id)) {
-    where = {
-      id: +req.params.id
-    }
-  } else {
-    where = {
-      username: req.params.id
-    }
-  }
-  models.user.find({
-    where
-  }).then(function (user) {
-    if (!user) {
-      var err = new Error('User not found.')
-      err.status = 400
-      return next(err)
-    }
-
-    return res.send(user)
-  })
-})
-
-/* POST new user */
 router.post('/', function (req, res, next) {
   var errs = []
 
@@ -96,18 +69,37 @@ router.post('/', function (req, res, next) {
         secret: hash,
         email: req.body.email
       }).then(function (user) {
-        req.login(user, function (err) {
-          if (err) {
-            return next(err)
-          }
-          return res.send(user)
-        })
+        res.send(user)
       }).catch(function (err) {
-        return next(err)
+        next(err)
       })
     })
   }).catch(function (err) {
-    return next(err)
+    next(err)
+  })
+})
+
+router.get('/:id', function (req, res, next) {
+  var where
+  if (/^[1-9]\d*$/.test(req.params.id)) {
+    where = {
+      id: +req.params.id
+    }
+  } else {
+    where = {
+      username: req.params.id
+    }
+  }
+  models.user.find({
+    where
+  }).then(function (user) {
+    if (!user) {
+      var err = new Error('Not found.')
+      err.status = 404
+      return next(err)
+    }
+
+    res.send(user)
   })
 })
 

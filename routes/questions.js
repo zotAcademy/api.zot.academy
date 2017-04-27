@@ -16,7 +16,7 @@ router.get('/', function (req, res, next) {
 router.post('/', requireAuthentication, function (req, res, next) {
   req.body.userId = req.user.id
   models.question.create(req.body, {
-    fields: ['text'],
+    fields: ['text', 'userId'],
     include: [{ all: true }]
   }).then(function (question) {
     res.send(question)
