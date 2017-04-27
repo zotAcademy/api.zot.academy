@@ -5,40 +5,83 @@ const models = require('../models')
 
 const requireAuthentication = require('./middlewares/requireAuthentication')
 
-/* GET question listing. */
 router.get('/', function (req, res, next) {
   models.question.findAll({
     include: [ models.user ]
   }).then(function (questions) {
-    return res.send(questions)
+    res.send(questions)
   })
 })
 
-/* GET question by id */
-router.get('/:id', function (req, res, next) {
-  models.question.findById(+req.params.id, {
-    include: [ models.user ]
-  }).then(function (question) {
-    if (!question) {
-      var err = new Error('Question not found.')
-      err.status = 400
-      return next(err)
-    }
-
-    return res.send(question)
-  })
-})
-
-/* POST new question */
 router.post('/', requireAuthentication, function (req, res, next) {
-  models.question.create({
-    text: '' + req.body.text,
-    userId: req.user.id
-  }, {
-    include: [ models.user ]
+  req.body.userId = req.user.id
+  models.question.create(req.body, {
+    fields: ['text'],
+    include: [{ all: true }]
   }).then(function (question) {
     res.send(question)
   })
+})
+
+router.get('/:id', function (req, res, next) {
+  models.question.findById(+req.params.id, {
+    include: [ models.user, models.answer ]
+  }).then(function (question) {
+    if (!question) {
+      var err = new Error('Not found.')
+      err.status = 404
+      return next(err)
+    }
+
+    res.send(question)
+  })
+})
+
+router.patch('/:id', requireAuthentication, function (req, res, next) {
+  models.question.findById(+req.params.id)
+    .then(function (question) {
+      var err
+      if (!question) {
+        err = new Error('Not found.')
+        err.status = 404
+        return next(err)
+      }
+
+      if (question.userId !== req.user.id) {
+        err = new Error('Permission denied.')
+        err.status = 403
+        return next(err)
+      }
+
+      question.update(req.body, {
+        fields: ['text']
+      }).then(function () {
+        res.send(question)
+      })
+    })
+})
+
+router.delete('/:id', requireAuthentication, function (req, res, next) {
+  models.question.findById(+req.params.id)
+    .then(function (question) {
+      var err
+      if (!question) {
+        err = new Error('Not found.')
+        err.status = 404
+        return next(err)
+      }
+
+      if (question.userId !== req.user.id) {
+        err = new Error('Permission denied.')
+        err.status = 403
+        return next(err)
+      }
+
+      question.destroy()
+        .then(function () {
+          res.send(question)
+        })
+    })
 })
 
 module.exports = router

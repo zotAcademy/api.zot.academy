@@ -17,6 +17,7 @@ module.exports = function (sequelize, DataTypes) {
             onDelete: 'CASCADE'
           }
         })
+        question.hasMany(models.answer)
       }
     },
     instanceMethods: {
