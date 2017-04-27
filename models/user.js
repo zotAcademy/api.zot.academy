@@ -34,10 +34,10 @@ module.exports = function (sequelize, DataTypes) {
     },
     instanceMethods: {
       toJSON: function () {
-        var values = Object.assign({}, this.get())
-
-        delete values.secret
-        return values
+        var value = Object.assign({}, this.get())
+        delete value.email
+        delete value.secret
+        return value
       }
     }
   })
