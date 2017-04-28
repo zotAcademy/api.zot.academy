@@ -5,7 +5,7 @@ const twitter = require('twitter-text')
 module.exports = function (sequelize, DataTypes) {
   var comment = sequelize.define('comment', {
     text: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: false
     }
   }, {

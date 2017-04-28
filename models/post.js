@@ -5,7 +5,7 @@ const autolink = require('./middlewares/autolink')
 module.exports = function (sequelize, DataTypes) {
   var post = sequelize.define('post', {
     text: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: false
     }
   }, {
