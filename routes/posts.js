@@ -17,7 +17,7 @@ router.get('/', function (req, res, next) {
     }, {
       model: models.user
     }],
-    group: ['post.id']
+    group: ['post.id', 'user.id']
   }).then(function (posts) {
     res.send(posts)
   })
