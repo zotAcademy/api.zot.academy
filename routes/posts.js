@@ -6,90 +6,90 @@ const models = require('../models')
 const requireAuthentication = require('./middlewares/requireAuthentication')
 
 router.get('/', function (req, res, next) {
-  models.question.findAll({
+  models.post.findAll({
     order: [['createdAt', 'DESC']],
     include: [{ all: true }]
-  }).then(function (questions) {
-    res.send(questions)
+  }).then(function (posts) {
+    res.send(posts)
   })
 })
 
 router.post('/', requireAuthentication, function (req, res, next) {
   req.body.userId = req.user.id
-  models.question.create(req.body, {
+  models.post.create(req.body, {
     fields: ['text', 'userId'],
     include: [{ all: true }]
-  }).then(function (question) {
-    res.send(question)
+  }).then(function (post) {
+    res.send(post)
   })
 })
 
 router.get('/:id', function (req, res, next) {
-  models.question.findById(+req.params.id, {
-    include: [ models.user, models.answer ]
-  }).then(function (question) {
-    if (!question) {
+  models.post.findById(+req.params.id, {
+    include: [ models.user, models.comment ]
+  }).then(function (post) {
+    if (!post) {
       var err = new Error('Not found.')
       err.status = 404
       return next(err)
     }
 
-    res.send(question)
+    res.send(post)
   })
 })
 
 router.patch('/:id', requireAuthentication, function (req, res, next) {
-  models.question.findById(+req.params.id)
-    .then(function (question) {
+  models.post.findById(+req.params.id)
+    .then(function (post) {
       var err
-      if (!question) {
+      if (!post) {
         err = new Error('Not found.')
         err.status = 404
         return next(err)
       }
 
-      if (question.userId !== req.user.id) {
+      if (post.userId !== req.user.id) {
         err = new Error('Permission denied.')
         err.status = 403
         return next(err)
       }
 
-      question.update(req.body, {
+      post.update(req.body, {
         fields: ['text']
       }).then(function () {
-        res.send(question)
+        res.send(post)
       })
     })
 })
 
 router.delete('/:id', requireAuthentication, function (req, res, next) {
-  models.question.findById(+req.params.id)
-    .then(function (question) {
+  models.post.findById(+req.params.id)
+    .then(function (post) {
       var err
-      if (!question) {
+      if (!post) {
         err = new Error('Not found.')
         err.status = 404
         return next(err)
       }
 
-      if (question.userId !== req.user.id) {
+      if (post.userId !== req.user.id) {
         err = new Error('Permission denied.')
         err.status = 403
         return next(err)
       }
 
-      models.answer.findOne({
-        questionId: question.id
-      }).then(function (answer) {
-        if (answer) {
-          err = new Error('Cannot delete question once it has been answered.')
+      models.comment.findOne({
+        postId: post.id
+      }).then(function (comment) {
+        if (comment) {
+          err = new Error('Cannot delete post once it has been commented.')
           err.status = 403
           return next(err)
         }
 
-        question.destroy()
+        post.destroy()
           .then(function () {
-            res.send(question)
+            res.send(post)
           })
       })
     })

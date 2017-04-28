@@ -3,7 +3,7 @@
 const twitter = require('twitter-text')
 
 module.exports = function (sequelize, DataTypes) {
-  var answer = sequelize.define('answer', {
+  var post = sequelize.define('post', {
     text: {
       type: DataTypes.STRING,
       allowNull: false
@@ -11,18 +11,13 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     classMethods: {
       associate (models) {
-        answer.belongsTo(models.user, {
+        post.belongsTo(models.user, {
           foreignKey: {
             allowNull: false,
             onDelete: 'CASCADE'
           }
         })
-        answer.belongsTo(models.question, {
-          foreignKey: {
-            allowNull: false,
-            onDelete: 'CASCADE'
-          }
-        })
+        post.hasMany(models.comment)
       }
     },
     instanceMethods: {
@@ -38,5 +33,5 @@ module.exports = function (sequelize, DataTypes) {
     }
   })
 
-  return answer
+  return post
 }

@@ -11,7 +11,7 @@ const models = require('./models')
 const index = require('./routes/index')
 const session = require('./routes/session')
 const users = require('./routes/users')
-const questions = require('./routes/questions')
+const posts = require('./routes/posts')
 
 const app = express()
 
@@ -48,7 +48,7 @@ app.use(function (req, res, next) {
 app.use('/', index)
 app.use('/session', session)
 app.use('/users', users)
-app.use('/questions', questions)
+app.use('/posts', posts)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
