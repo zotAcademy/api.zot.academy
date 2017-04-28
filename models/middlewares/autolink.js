@@ -2,7 +2,7 @@ const env = process.env.NODE_ENV || 'development'
 const twttr = {
   txt: require('twitter-text')
 }
-const urlBase = env === 'developement' ? 'http://localhost:8080' : 'https://zot.academy'
+const urlBase = env === 'development' ? 'http://localhost:8080' : 'https://zot.academy'
 
 module.exports = function (text) {
   return twttr.txt.autoLink(text, {
