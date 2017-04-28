@@ -18,6 +18,7 @@ if (config.use_env_variable) {
 
 if (sequelize.options.dialect === 'postgres') {
   sequelize.query('CREATE EXTENSION IF NOT EXISTS citext')
+  require('pg').defaults.parseInt8 = true
 }
 
 fs
