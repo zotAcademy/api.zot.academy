@@ -8,7 +8,16 @@ const requireAuthentication = require('./middlewares/requireAuthentication')
 router.get('/', function (req, res, next) {
   models.post.findAll({
     order: [['createdAt', 'DESC']],
-    include: [{ all: true }]
+    attributes: {
+      include: [[models.Sequelize.fn('COUNT', models.Sequelize.col('comments.id')), 'commentsCount']]
+    },
+    include: [{
+      model: models.comment,
+      attributes: []
+    }, {
+      model: models.user
+    }],
+    group: ['post.id']
   }).then(function (posts) {
     res.send(posts)
   })
