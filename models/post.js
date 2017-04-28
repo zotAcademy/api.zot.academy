@@ -1,6 +1,6 @@
 'use strict'
 
-const twitter = require('twitter-text')
+const autolink = require('./middlewares/autolink')
 
 module.exports = function (sequelize, DataTypes) {
   var post = sequelize.define('post', {
@@ -23,11 +23,7 @@ module.exports = function (sequelize, DataTypes) {
     instanceMethods: {
       toJSON: function () {
         var value = Object.assign({}, this.get())
-
-        value.entities = twitter.extractEntitiesWithIndices(value.text, {
-          extractUrlsWithoutProtocol: false
-        })
-
+        value.html = autolink(value.text)
         return value
       }
     }
