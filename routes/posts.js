@@ -7,9 +7,11 @@ const requireAuthentication = require('./middlewares/requireAuthentication')
 
 router.get('/', function (req, res, next) {
   models.post.findAll({
-    order: [['createdAt', 'DESC']],
+    order: [['created_at', 'DESC']],
     attributes: {
-      include: [[models.Sequelize.fn('COUNT', models.Sequelize.col('comments.id')), 'commentsCount']]
+      include: [
+        [models.Sequelize.fn('COUNT', models.Sequelize.col('comments.id')), 'comments_count']
+      ]
     },
     include: [{
       model: models.comment,
@@ -24,9 +26,9 @@ router.get('/', function (req, res, next) {
 })
 
 router.post('/', requireAuthentication, function (req, res, next) {
-  req.body.userId = req.user.id
+  req.body.user_id = req.user.id
   models.post.create(req.body, {
-    fields: ['text', 'userId'],
+    fields: ['text', 'user_id'],
     include: [{ all: true }]
   }).then(function (post) {
     res.send(post)
@@ -57,7 +59,7 @@ router.patch('/:id', requireAuthentication, function (req, res, next) {
         return next(err)
       }
 
-      if (post.userId !== req.user.id) {
+      if (post.user_id !== req.user.id) {
         err = new Error('Permission denied.')
         err.status = 403
         return next(err)
@@ -81,14 +83,14 @@ router.delete('/:id', requireAuthentication, function (req, res, next) {
         return next(err)
       }
 
-      if (post.userId !== req.user.id) {
+      if (post.user_id !== req.user.id) {
         err = new Error('Permission denied.')
         err.status = 403
         return next(err)
       }
 
       models.comment.findOne({
-        postId: post.id
+        post_id: post.id
       }).then(function (comment) {
         if (comment) {
           err = new Error('Cannot delete post once it has been commented.')

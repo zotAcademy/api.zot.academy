@@ -17,6 +17,9 @@ module.exports = function (sequelize, DataTypes) {
             onDelete: 'CASCADE'
           }
         })
+        post.belongsTo(post, {
+          as: 'in_reply_to_post'
+        })
         post.hasMany(models.comment)
       }
     },
