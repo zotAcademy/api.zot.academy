@@ -31,7 +31,11 @@ router.post('/', requireAuthentication, function (req, res, next) {
     fields: ['text', 'user_id'],
     include: [{ all: true }]
   }).then(function (post) {
-    res.send(post)
+    models.post.findById(post.id, {
+      include: [ models.user, models.comment ]
+    }).then(function (post) {
+      res.send(post)
+    })
   })
 })
 
@@ -68,7 +72,11 @@ router.patch('/:id', requireAuthentication, function (req, res, next) {
       post.update(req.body, {
         fields: ['text']
       }).then(function () {
-        res.send(post)
+        models.post.findById(post.id, {
+          include: [ models.user, models.comment ]
+        }).then(function (post) {
+          res.send(post)
+        })
       })
     })
 })
