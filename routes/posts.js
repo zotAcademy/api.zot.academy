@@ -7,7 +7,7 @@ const requireAuthentication = require('./middlewares/requireAuthentication')
 
 router.get('/', function (req, res, next) {
   models.post.findAll({
-    order: [['created_at', 'DESC']],
+    order: [['id', 'DESC']],
     attributes: {
       include: [
         [models.Sequelize.fn('COUNT', models.Sequelize.col('comments.id')), 'comments_count']
