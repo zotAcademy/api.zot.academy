@@ -8,18 +8,9 @@ const requireAuthentication = require('./middlewares/requireAuthentication')
 router.get('/', function (req, res, next) {
   models.post.findAll({
     order: [['id', 'DESC']],
-    attributes: {
-      include: [
-        [models.Sequelize.fn('COUNT', models.Sequelize.col('comments.id')), 'comments_count']
-      ]
-    },
     include: [{
-      model: models.comment,
-      attributes: []
-    }, {
       model: models.user
-    }],
-    group: ['post.id', 'user.id']
+    }]
   }).then(function (posts) {
     res.send(posts)
   })
@@ -27,21 +18,41 @@ router.get('/', function (req, res, next) {
 
 router.post('/', requireAuthentication, function (req, res, next) {
   req.body.user_id = req.user.id
-  models.post.create(req.body, {
-    fields: ['text', 'user_id'],
-    include: [{ all: true }]
-  }).then(function (post) {
-    models.post.findById(post.id, {
-      include: [ models.user, models.comment ]
+  if (req.body.in_reply_to_post_id) {
+    models.post.findById(req.body.in_reply_to_post_id)
+      .then(function (post) {
+        if (!post) {
+          var err = new Error('Replying Post Not found.')
+          err.status = 404
+          return next(err)
+        }
+
+        models.post.create(req.body, {
+          fields: ['text', 'user_id', 'in_reply_to_post_id']
+        }).then(function (post) {
+          models.post.findById(post.id, {
+            include: [{ all: true }]
+          }).then(function (post) {
+            res.send(post)
+          })
+        })
+      })
+  } else {
+    models.post.create(req.body, {
+      fields: ['text', 'user_id']
     }).then(function (post) {
-      res.send(post)
+      models.post.findById(post.id, {
+        include: [{ all: true }]
+      }).then(function (post) {
+        res.send(post)
+      })
     })
-  })
+  }
 })
 
 router.get('/:id', function (req, res, next) {
   models.post.findById(+req.params.id, {
-    include: [ models.user, models.comment ]
+    include: [{ all: true }]
   }).then(function (post) {
     if (!post) {
       var err = new Error('Not found.')
@@ -73,7 +84,7 @@ router.patch('/:id', requireAuthentication, function (req, res, next) {
         fields: ['text']
       }).then(function () {
         models.post.findById(post.id, {
-          include: [ models.user, models.comment ]
+          include: [{ all: true }]
         }).then(function (post) {
           res.send(post)
         })
@@ -82,36 +93,27 @@ router.patch('/:id', requireAuthentication, function (req, res, next) {
 })
 
 router.delete('/:id', requireAuthentication, function (req, res, next) {
-  models.post.findById(+req.params.id)
-    .then(function (post) {
-      var err
-      if (!post) {
-        err = new Error('Not found.')
-        err.status = 404
-        return next(err)
-      }
+  models.post.findById(+req.params.id, {
+    include: [{ all: true }]
+  }).then(function (post) {
+    var err
+    if (!post) {
+      err = new Error('Not found.')
+      err.status = 404
+      return next(err)
+    }
 
-      if (post.user_id !== req.user.id) {
-        err = new Error('Permission denied.')
-        err.status = 403
-        return next(err)
-      }
+    if (post.user_id !== req.user.id) {
+      err = new Error('Permission denied.')
+      err.status = 403
+      return next(err)
+    }
 
-      models.comment.findOne({
-        post_id: post.id
-      }).then(function (comment) {
-        if (comment) {
-          err = new Error('Cannot delete post once it has been commented.')
-          err.status = 403
-          return next(err)
-        }
-
-        post.destroy()
-          .then(function () {
-            res.send(post)
-          })
+    post.destroy()
+      .then(function () {
+        res.send(post)
       })
-    })
+  })
 })
 
 module.exports = router
