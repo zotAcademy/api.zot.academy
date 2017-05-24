@@ -52,7 +52,13 @@ router.post('/', requireAuthentication, function (req, res, next) {
 
 router.get('/:id', function (req, res, next) {
   models.post.findById(+req.params.id, {
-    include: [{ all: true }]
+    include: [{
+      all: true
+    }, {
+      model: models.post,
+      as: 'replies',
+      include: [ models.user ]
+    }]
   }).then(function (post) {
     if (!post) {
       var err = new Error('Not found.')

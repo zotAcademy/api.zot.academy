@@ -20,7 +20,11 @@ module.exports = function (sequelize, DataTypes) {
         post.belongsTo(post, {
           as: 'in_reply_to_post'
         })
-        post.hasMany(models.comment)
+        post.hasMany(post, {
+          as: 'replies',
+          sourceKey: 'id',
+          foreignKey: 'in_reply_to_post_id'
+        })
       }
     },
     instanceMethods: {
