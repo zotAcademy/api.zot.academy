@@ -53,14 +53,10 @@ router.post('/', requireAuthentication, function (req, res, next) {
 router.get('/:id', function (req, res, next) {
   models.post.findById(+req.params.id, {
     include: [{
-      all: true
+      model: models.user
     }, {
       model: models.post,
       as: 'in_reply_to_post',
-      include: [ models.user ]
-    }, {
-      model: models.post,
-      as: 'replies',
       include: [ models.user ]
     }]
   }).then(function (post) {
