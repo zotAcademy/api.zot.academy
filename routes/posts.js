@@ -6,11 +6,18 @@ const models = require('../models')
 const requireAuthentication = require('./middlewares/requireAuthentication')
 
 router.get('/', function (req, res, next) {
+  var where = {}
+
+  if (req.query.in_reply_to_post_id === '') {
+    where.in_reply_to_post_id = null
+  } else if (req.query.in_reply_to_post_id != null) {
+    where.in_reply_to_post_id = +req.query.in_reply_to_post_id
+  }
+
   models.post.findAll({
-    order: [['id', 'DESC']],
-    include: [{
-      model: models.user
-    }]
+    where,
+    include: [{ model: models.user }],
+    order: [['id', 'DESC']]
   }).then(function (posts) {
     res.send(posts)
   })
@@ -53,7 +60,7 @@ router.post('/', requireAuthentication, function (req, res, next) {
 router.get('/:id', function (req, res, next) {
   models.post.findById(+req.params.id, {
     include: [{
-      model: models.user
+      all: true
     }, {
       model: models.post,
       as: 'in_reply_to_post',
