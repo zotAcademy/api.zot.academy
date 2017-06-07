@@ -1,9 +1,40 @@
 const express = require('express')
 const router = express.Router()
+const twttr = {
+  txt: require('twitter-text')
+}
 
 const models = require('../models')
 
 const requireAuthentication = require('./middlewares/requireAuthentication')
+
+const include = [{
+  model: models.user
+}, {
+  model: models.post,
+  as: 'in_reply_to_post',
+  include: [ models.user ]
+}]
+
+const setMentions = function (post) {
+  return new Promise(function (resolve, reject) {
+    var mentions = twttr.txt.extractMentions(post.text).filter(function (mention, index, array) {
+      return array.indexOf(mention) === index
+    })
+
+    models.user.findAll({
+      where: {
+        $or: mentions.map(function (mention) {
+          return { username: mention }
+        })
+      }
+    }).then(function (users) {
+      post.setMentions(users).then(function () {
+        resolve(post)
+      }).catch(reject)
+    }).catch(reject)
+  })
+}
 
 router.get('/', function (req, res, next) {
   var where = {}
@@ -37,10 +68,12 @@ router.post('/', requireAuthentication, function (req, res, next) {
         models.post.create(req.body, {
           fields: ['text', 'user_id', 'in_reply_to_post_id']
         }).then(function (post) {
-          models.post.findById(post.id, {
-            include: [{ all: true }]
-          }).then(function (post) {
-            res.send(post)
+          setMentions(post).then(function (post) {
+            models.post.findById(post.id, {
+              include
+            }).then(function (post) {
+              res.send(post)
+            })
           })
         })
       })
@@ -48,10 +81,12 @@ router.post('/', requireAuthentication, function (req, res, next) {
     models.post.create(req.body, {
       fields: ['text', 'user_id']
     }).then(function (post) {
-      models.post.findById(post.id, {
-        include: [{ all: true }]
-      }).then(function (post) {
-        res.send(post)
+      setMentions(post).then(function (post) {
+        models.post.findById(post.id, {
+          include: [{ all: true }]
+        }).then(function (post) {
+          res.send(post)
+        })
       })
     })
   }
@@ -59,13 +94,7 @@ router.post('/', requireAuthentication, function (req, res, next) {
 
 router.get('/:id', function (req, res, next) {
   models.post.findById(+req.params.id, {
-    include: [{
-      all: true
-    }, {
-      model: models.post,
-      as: 'in_reply_to_post',
-      include: [ models.user ]
-    }]
+    include
   }).then(function (post) {
     if (!post) {
       var err = new Error('Not found.')
@@ -97,9 +126,11 @@ router.patch('/:id', requireAuthentication, function (req, res, next) {
         fields: ['text']
       }).then(function () {
         models.post.findById(post.id, {
-          include: [{ all: true }]
+          include
         }).then(function (post) {
-          res.send(post)
+          setMentions(post).then(function (post) {
+            res.send(post)
+          })
         })
       })
     })
@@ -107,7 +138,7 @@ router.patch('/:id', requireAuthentication, function (req, res, next) {
 
 router.delete('/:id', requireAuthentication, function (req, res, next) {
   models.post.findById(+req.params.id, {
-    include: [{ all: true }]
+    include
   }).then(function (post) {
     var err
     if (!post) {

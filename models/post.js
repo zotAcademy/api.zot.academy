@@ -20,11 +20,23 @@ module.exports = function (sequelize, DataTypes) {
         post.belongsTo(post, {
           as: 'in_reply_to_post'
         })
+        post.belongsToMany(models.user, {
+          as: 'mentions',
+          through: 'mention'
+        })
+        models.user.belongsToMany(post, {
+          as: 'mentions',
+          through: 'mention'
+        })
       }
     },
     instanceMethods: {
       toJSON: function () {
         var value = Object.assign({}, this.get())
+
+        // https://github.com/sequelize/sequelize/issues/5590
+        delete value.mention
+
         value.html = autolink(value.text)
         return value
       }

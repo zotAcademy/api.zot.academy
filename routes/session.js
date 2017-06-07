@@ -10,11 +10,13 @@ const requireAuthentication = require('./middlewares/requireAuthentication')
 
 passport.use(new LocalStrategy(function (username, password, done) {
   models.user.findOne({
-    where: models.Sequelize.or({
-      username
-    }, {
-      email: username
-    })
+    where: {
+      $or: [{
+        username
+      }, {
+        email: username
+      }]
+    }
   }).then(function (user) {
     var message = 'Incorrect username or password.'
     if (!user) {

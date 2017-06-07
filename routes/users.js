@@ -43,11 +43,13 @@ router.post('/', function (req, res, next) {
   }
 
   models.user.findOne({
-    where: models.Sequelize.or({
-      username: req.body.username
-    }, {
-      email: req.body.email
-    })
+    where: {
+      $or: [{
+        username: req.body.username
+      }, {
+        email: req.body.email
+      }]
+    }
   }).then(function (user) {
     if (user) {
       var err
@@ -79,20 +81,26 @@ router.post('/', function (req, res, next) {
   })
 })
 
+const getUserById = function (id) {
+  return new Promise(function (resolve, reject) {
+    var where
+    if (/^[1-9]\d*$/.test('' + id)) {
+      where = {
+        id: +id
+      }
+    } else {
+      where = {
+        username: id
+      }
+    }
+    models.user.find({
+      where
+    }).then(resolve).catch(reject)
+  })
+}
+
 router.get('/:id', function (req, res, next) {
-  var where
-  if (/^[1-9]\d*$/.test(req.params.id)) {
-    where = {
-      id: +req.params.id
-    }
-  } else {
-    where = {
-      username: req.params.id
-    }
-  }
-  models.user.find({
-    where
-  }).then(function (user) {
+  getUserById(req.params.id).then(function (user) {
     if (!user) {
       var err = new Error('Not found.')
       err.status = 404
@@ -104,19 +112,7 @@ router.get('/:id', function (req, res, next) {
 })
 
 router.get('/:id/posts/', function (req, res, next) {
-  var where
-  if (/^[1-9]\d*$/.test(req.params.id)) {
-    where = {
-      id: +req.params.id
-    }
-  } else {
-    where = {
-      username: req.params.id
-    }
-  }
-  models.user.find({
-    where
-  }).then(function (user) {
+  getUserById(req.params.id).then(function (user) {
     if (!user) {
       var err = new Error('Not found.')
       err.status = 404
@@ -125,6 +121,26 @@ router.get('/:id/posts/', function (req, res, next) {
 
     user.getPosts({
       include: [{ model: models.user }],
+      order: [['id', 'DESC']]
+    }).then(function (posts) {
+      res.send(posts)
+    })
+  })
+})
+
+router.get('/:id/mentions/', function (req, res, next) {
+  getUserById(req.params.id).then(function (user) {
+    if (!user) {
+      var err = new Error('Not found.')
+      err.status = 404
+      return next(err)
+    }
+
+    user.getMentions({
+      include: [{ model: models.user }],
+      through: {
+        attributes: []
+      },
       order: [['id', 'DESC']]
     }).then(function (posts) {
       res.send(posts)
