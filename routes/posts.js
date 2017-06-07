@@ -10,10 +10,6 @@ const requireAuthentication = require('./middlewares/requireAuthentication')
 
 const include = [{
   model: models.user
-}, {
-  model: models.post,
-  as: 'in_reply_to_post',
-  include: [ models.user ]
 }]
 
 const setMentionsAndHashtags = function (post) {
@@ -56,17 +52,11 @@ const setMentionsAndHashtags = function (post) {
 }
 
 router.get('/', function (req, res, next) {
-  var where = {}
-
-  if (req.query.in_reply_to_post_id === '') {
-    where.in_reply_to_post_id = null
-  } else if (req.query.in_reply_to_post_id != null) {
-    where.in_reply_to_post_id = +req.query.in_reply_to_post_id
-  }
-
   models.post.findAll({
-    where,
-    include: [{ model: models.user }],
+    where: {
+      in_reply_to_post_id: null
+    },
+    include,
     order: [['id', 'DESC']]
   }).then(function (posts) {
     res.send(posts)
@@ -102,7 +92,7 @@ router.post('/', requireAuthentication, function (req, res, next) {
     }).then(function (post) {
       setMentionsAndHashtags(post).then(function () {
         models.post.findById(post.id, {
-          include: [{ all: true }]
+          include
         }).then(function (post) {
           res.send(post)
         })
@@ -122,6 +112,24 @@ router.get('/:id', function (req, res, next) {
     }
 
     res.send(post)
+  })
+})
+
+router.get('/:id/replies/', function (req, res, next) {
+  models.post.findById(+req.params.id, {
+    include
+  }).then(function (post) {
+    if (!post) {
+      var err = new Error('Not found.')
+      err.status = 404
+      return next(err)
+    }
+
+    post.getReplies({
+      include
+    }).then(function (posts) {
+      res.send(posts)
+    })
   })
 })
 
@@ -149,8 +157,6 @@ router.patch('/:id', requireAuthentication, function (req, res, next) {
         }).then(function (post) {
           setMentionsAndHashtags(post).then(function () {
             res.send(post)
-          }).catch(function (err) {
-            console.log(err)
           })
         })
       })

@@ -20,6 +20,10 @@ module.exports = function (sequelize, DataTypes) {
         post.belongsTo(post, {
           as: 'in_reply_to_post'
         })
+        post.hasMany(post, {
+          as: 'replies',
+          foreignKey: 'in_reply_to_post_id'
+        })
         post.belongsToMany(models.user, {
           as: 'mentions',
           through: 'mention'
