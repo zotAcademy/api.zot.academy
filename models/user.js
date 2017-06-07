@@ -22,14 +22,15 @@ module.exports = function (sequelize, DataTypes) {
   }, {
     classMethods: {
       associate (models) {
-        models.user.belongsToMany(models.user, {
+        user.belongsToMany(user, {
           as: 'followers',
           through: 'follow'
         })
-        models.user.belongsToMany(models.user, {
+        user.belongsToMany(user, {
           as: 'followings',
           through: 'follow'
         })
+        user.hasMany(models.post)
       }
     },
     instanceMethods: {

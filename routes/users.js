@@ -103,4 +103,33 @@ router.get('/:id', function (req, res, next) {
   })
 })
 
+router.get('/:id/posts/', function (req, res, next) {
+  var where
+  if (/^[1-9]\d*$/.test(req.params.id)) {
+    where = {
+      id: +req.params.id
+    }
+  } else {
+    where = {
+      username: req.params.id
+    }
+  }
+  models.user.find({
+    where
+  }).then(function (user) {
+    if (!user) {
+      var err = new Error('Not found.')
+      err.status = 404
+      return next(err)
+    }
+
+    user.getPosts({
+      include: [{ model: models.user }],
+      order: [['id', 'DESC']]
+    }).then(function (posts) {
+      res.send(posts)
+    })
+  })
+})
+
 module.exports = router
