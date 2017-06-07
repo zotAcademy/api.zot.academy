@@ -16,24 +16,43 @@ const include = [{
   include: [ models.user ]
 }]
 
-const setMentions = function (post) {
-  return new Promise(function (resolve, reject) {
-    var mentions = twttr.txt.extractMentions(post.text).filter(function (mention, index, array) {
-      return array.indexOf(mention) === index
-    })
-
-    models.user.findAll({
-      where: {
-        $or: mentions.map(function (mention) {
-          return { username: mention }
-        })
-      }
-    }).then(function (users) {
-      post.setMentions(users).then(function () {
-        resolve(post)
-      }).catch(reject)
-    }).catch(reject)
+const setMentionsAndHashtags = function (post) {
+  var mentions = twttr.txt.extractMentions(post.text).filter(function (mention, index, array) {
+    return array.indexOf(mention) === index
   })
+
+  var hashtags = twttr.txt.extractHashtags(post.text).filter(function (hashtag, index, array) {
+    return array.indexOf(hashtag) === index
+  })
+
+  return Promise.all([
+    new Promise(function (resolve, reject) {
+      Promise.all(hashtags.map(function (hashtag) {
+        return models.hashtag.findOrCreate({
+          where: {
+            name: hashtag
+          }
+        })
+      })).then(function (results) {
+        post.setHashtags(results.map(function (result) { return result[0] })).then(function () {
+          resolve()
+        }).catch(reject)
+      }).catch(reject)
+    }),
+    new Promise(function (resolve, reject) {
+      models.user.findAll({
+        where: {
+          $or: mentions.map(function (mention) {
+            return { username: mention }
+          })
+        }
+      }).then(function (users) {
+        post.setMentions(users).then(function () {
+          resolve()
+        }).catch(reject)
+      }).catch(reject)
+    })
+  ])
 }
 
 router.get('/', function (req, res, next) {
@@ -68,7 +87,7 @@ router.post('/', requireAuthentication, function (req, res, next) {
         models.post.create(req.body, {
           fields: ['text', 'user_id', 'in_reply_to_post_id']
         }).then(function (post) {
-          setMentions(post).then(function (post) {
+          setMentionsAndHashtags(post).then(function () {
             models.post.findById(post.id, {
               include
             }).then(function (post) {
@@ -81,7 +100,7 @@ router.post('/', requireAuthentication, function (req, res, next) {
     models.post.create(req.body, {
       fields: ['text', 'user_id']
     }).then(function (post) {
-      setMentions(post).then(function (post) {
+      setMentionsAndHashtags(post).then(function () {
         models.post.findById(post.id, {
           include: [{ all: true }]
         }).then(function (post) {
@@ -128,8 +147,10 @@ router.patch('/:id', requireAuthentication, function (req, res, next) {
         models.post.findById(post.id, {
           include
         }).then(function (post) {
-          setMentions(post).then(function (post) {
+          setMentionsAndHashtags(post).then(function () {
             res.send(post)
+          }).catch(function (err) {
+            console.log(err)
           })
         })
       })

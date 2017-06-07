@@ -28,6 +28,12 @@ module.exports = function (sequelize, DataTypes) {
           as: 'mentions',
           through: 'mention'
         })
+        post.belongsToMany(models.hashtag, {
+          through: 'hash'
+        })
+        models.hashtag.belongsToMany(post, {
+          through: 'hash'
+        })
       }
     },
     instanceMethods: {
@@ -36,8 +42,12 @@ module.exports = function (sequelize, DataTypes) {
 
         // https://github.com/sequelize/sequelize/issues/5590
         delete value.mention
+        delete value.hash
 
-        value.html = autolink(value.text)
+        if (value.text) {
+          value.html = autolink(value.text)
+        }
+
         return value
       }
     }

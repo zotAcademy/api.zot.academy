@@ -12,6 +12,7 @@ const index = require('./routes/index')
 const session = require('./routes/session')
 const users = require('./routes/users')
 const posts = require('./routes/posts')
+const hashtags = require('./routes/hashtags')
 
 const app = express()
 
@@ -49,6 +50,7 @@ app.use('/', index)
 app.use('/session', session)
 app.use('/users', users)
 app.use('/posts', posts)
+app.use('/hashtags', hashtags)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

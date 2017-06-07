@@ -38,6 +38,9 @@ module.exports = function (sequelize, DataTypes) {
         var value = Object.assign({}, this.get())
         delete value.email
         delete value.secret
+
+        delete value.mention
+
         return value
       }
     }

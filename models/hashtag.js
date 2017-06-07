@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = function (sequelize, DataTypes) {
-  var tag = sequelize.define('tag', {
+  var hashtag = sequelize.define('hashtag', {
     name: {
       type: sequelize.options.dialect === 'postgres' ? 'citext' : DataTypes.STRING,
       unique: true,
@@ -13,11 +13,11 @@ module.exports = function (sequelize, DataTypes) {
     timestamps: false,
     classMethods: {
       associate (models) {
-        models.user.belongsToMany(models.tag, {
+        models.user.belongsToMany(models.hashtag, {
           as: 'subscribers',
           through: 'subscribe'
         })
-        models.tag.belongsToMany(models.user, {
+        models.hashtag.belongsToMany(models.user, {
           as: 'subscribings',
           through: 'subscribe'
         })
@@ -25,10 +25,14 @@ module.exports = function (sequelize, DataTypes) {
     },
     instanceMethods: {
       toJSON: function () {
-        return Object.assign({}, this.get())
+        var value = Object.assign({}, this.get())
+
+        delete value.hash
+
+        return value
       }
     }
   })
 
-  return tag
+  return hashtag
 }

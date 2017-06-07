@@ -2,6 +2,20 @@ const env = process.env.NODE_ENV || 'development'
 const twttr = {
   txt: require('twitter-text')
 }
+
+twttr.txt.extractEntitiesWithIndices = function (text, options) {
+  var entities = twttr.txt.extractUrlsWithIndices(text, options)
+                  .concat(twttr.txt.extractMentionsOrListsWithIndices(text))
+                  .concat(twttr.txt.extractHashtagsWithIndices(text, {checkUrlOverlap: false}))
+
+  if (entities.length === 0) {
+    return []
+  }
+
+  twttr.txt.removeOverlappingEntities(entities)
+  return entities
+}
+
 const urlBase = env === 'development' ? 'http://localhost:8080' : 'https://zot.academy'
 
 module.exports = function (text) {
