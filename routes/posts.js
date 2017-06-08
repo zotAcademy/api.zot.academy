@@ -180,10 +180,17 @@ router.delete('/:id', requireAuthentication, function (req, res, next) {
       return next(err)
     }
 
-    post.destroy()
-      .then(function () {
-        res.send(post)
-      })
+    post.getReplies().then(function (posts) {
+      if (posts.length > 0) {
+        err = new Error('You cannot delete a post once it has been commented on. However, feel free to to edit the post.')
+        err.status = 403
+        return next(err)
+      }
+      post.destroy()
+        .then(function () {
+          res.send(post)
+        })
+    })
   })
 })
 
