@@ -16,7 +16,7 @@ twttr.txt.extractEntitiesWithIndices = function (text, options) {
   return entities
 }
 
-const urlBase = env === 'development' ? 'http://localhost:8080' : 'https://zot.academy'
+const urlBase = env === 'development' ? 'http://localhost:8080' : 'https://zotacademy.github.io'
 
 module.exports = function (text) {
   return twttr.txt.autoLink(text, {
